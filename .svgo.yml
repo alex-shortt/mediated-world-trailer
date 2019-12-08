@@ -1,0 +1,4 @@
+plugins:
+  # Using viewBox instead of height and width attributes allows the svg element to be scaled using css
+  - removeViewBox: false
+  - removeDimensions: true

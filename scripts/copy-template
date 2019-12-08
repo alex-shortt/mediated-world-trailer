@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+TYPE=$1
+FROM_DIR=$2
+TO_DIR=$3
+NAME=$4
+
+TEMPLATE_NAME=${NAME##*/}
+NEW_DIR=${TO_DIR}/${NAME}
+
+if [[ -z ${NAME} ]]; then
+    >&2 echo "Usage: yarn ${TYPE} <${TYPE}-name>"
+    exit 1
+fi
+
+if [[ -e ${NEW_DIR} ]]; then
+    >&2 echo "The ${TYPE} ${NAME} already exists"
+    exit 1
+fi
+
+mkdir ${NEW_DIR}
+cp ${FROM_DIR}/* ${NEW_DIR}
+
+for file in ${NEW_DIR}/*; do
+    sed -i "" "s/__TEMPLATE_NAME__/${TEMPLATE_NAME}/g" ${file}
+    mv ${file} `echo ${file} | sed "s/template-name/${TEMPLATE_NAME}/g"`
+done
