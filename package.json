@@ -72,6 +72,7 @@
     "@fortawesome/free-brands-svg-icons": "^5.8.1",
     "@fortawesome/free-solid-svg-icons": "^5.8.1",
     "@fortawesome/react-fontawesome": "^0.1.4",
+    "hash.js": "^1.1.7",
     "normalize.css": "^8.0.1",
     "p5": "^0.10.2",
     "query-string": "^6.4.2",
