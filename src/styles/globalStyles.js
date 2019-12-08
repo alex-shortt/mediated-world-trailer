@@ -5,6 +5,12 @@ import "normalize.css"
 import "./fontawesome"
 
 export default createGlobalStyle`
+  body, html {
+    margin: 0;
+    background: white;
+    height: 100%;
+  }
+
   body {
     font-family: Avenir, Lato, Roboto, sans-serif;
     overflow: auto;
