@@ -6,8 +6,8 @@ export default class Entity {
   constructor(p, props) {
     const {
       size = 64,
-      pos = p5.Vector.random3D(),
-      rot = p5.Vector.random3D(),
+      pos = p.createVector(0, 0, 0),
+      rot = p5.Vector.random3D().mult(Math.PI * 2),
       fill = p.color(Math.random() * 360, 100, 60),
       easing = 0.05,
       speed = 10,
@@ -93,7 +93,7 @@ export default class Entity {
     const weights = []
     const numWeights = 16
     for (let i = 0; i < numWeights; i += 1) {
-      weights[i] = this.getIdVal(Math.floor((i / numWeights) * 20), 4)
+      weights[i] = idHash(this.id, i)
     }
 
     // increment noise walker
@@ -119,13 +119,6 @@ export default class Entity {
     const rz = this.weightedNoise(weights[11], 0.001, size * 0.00001)
     // console.log("rot: ", rx, ry, rz)
     this.rotate(p.createVector(rx, ry, rz))
-  }
-
-  getIdVal(pos, length) {
-    return (
-      parseInt(this.id.substring(pos, pos + length), 16) /
-      (Math.pow(16, length) - 1)
-    )
   }
 
   weightedNoise(weight, speed, amplitude) {
@@ -191,4 +184,14 @@ export default class Entity {
     const bright = p.brightness(fill) + offsetFill.z
     return p.color(hue, sat, bright)
   }
+}
+
+function idHash(id, val) {
+  const pos = val % (id.length - 1)
+  const length = 2
+
+  return (
+    parseInt((id + id).substring(pos, pos + length), 16) /
+    (Math.pow(16, length) - 1)
+  )
 }

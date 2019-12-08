@@ -1,11 +1,12 @@
 import LivingAudioChildren from "components/LivingAudioChildren"
 import Journey from "components/Journey"
 import Entity from "components/Entity"
+import Nature from "components/Nature"
 
 let LAC
 let journey
 let subject
-const entities = []
+let nature
 let dist = 0
 
 export default function sketch(p) {
@@ -14,22 +15,11 @@ export default function sketch(p) {
     p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL)
     p.colorMode(p.HSB)
 
-    LAC = new LivingAudioChildren(p)
-    LAC.setup()
+    // LAC = new LivingAudioChildren(p)
+    // journey = new Journey(p)
+    nature = new Nature(p, {})
 
-    journey = new Journey(p)
-    journey.setup()
-
-    subject = new Entity(p, { size: 64 })
-
-    // for (let i = 0; i < 20; i += 1) {
-    //   entities.push(
-    //     new Entity(p, {
-    //       size: 64,
-    //       pos: p.createVector(i * 70 - 600, (i % 8) * 70 - 200, 0)
-    //     })
-    //   )
-    // }
+    subject = new Entity(p, { size: 64, pos: p.createVector(-400, -400, 400) })
   }
 
   // eslint-disable-next-line no-param-reassign
@@ -45,17 +35,17 @@ export default function sketch(p) {
     subject.render()
 
     if (p.millis() > 2000 && dist === 0) {
-      subject.rotate(p.createVector(0, 0, (Math.PI * 1) / 3))
+      subject.rotate(p.createVector(0, (Math.PI * 1) / 3), 0)
       dist += 1
     }
 
     if (p.millis() > 4000 && dist === 1) {
-      subject.rotate(p.createVector(0, 0, (Math.PI * -2) / 3))
+      subject.rotate(p.createVector(0, (Math.PI * -2) / 3), 0)
       dist += 1
     }
 
     if (p.millis() > 6000 && dist === 2) {
-      subject.translate(p.createVector(0, 0, -700))
+      subject.translate(p.createVector(0, 0, -1700))
       dist += 1
     }
 
@@ -72,8 +62,6 @@ export default function sketch(p) {
       0
     )
 
-    // for (const entity of entities) {
-    //   entity.render()
-    // }
+    nature.render(subjectPos.x, subjectPos.y, subjectPos.z)
   }
 }
