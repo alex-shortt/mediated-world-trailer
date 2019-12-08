@@ -21,7 +21,6 @@ export default class LivingAudioChildren {
 
     mic.start()
     fft.setInput(mic)
-    p.colorMode(p.HSB)
 
     for (let x = 0; x < numBoxes; x += 1) {
       boxesX.push([])
