@@ -6,7 +6,7 @@ export default function View(props) {
   return (
     <>
       <Helmet title="View" />
-      React Boilerplate
+      trailer
     </>
   )
 }
