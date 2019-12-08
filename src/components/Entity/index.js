@@ -5,34 +5,36 @@ import uuid from "uuid/v4"
 export default class Entity {
   constructor(p, props) {
     const {
-      size,
+      size = 64,
       pos = p5.Vector.random3D(),
       rot = p5.Vector.random3D(),
       fill = p.color(Math.random() * 360, 100, 60),
-      seed,
+      easing = 0.05,
+      speed = 10,
+      seed = uuid(),
       ambientWeight = 1
     } = props
 
+    this.p = p
+
     this.id = hash
       .sha256()
-      .update(seed || uuid())
+      .update(seed)
       .digest("hex")
-    this.ambientWeight = ambientWeight
 
-    this.p = p
+    this.speed = speed
+    this.easing = easing
+
+    this.ambientWeight = ambientWeight
+    this.ambientDelta = 0
 
     this.size = size
     this.targetSize = size
-
-    this.ambientDelta = 0
 
     this.pos = pos
     this.targetPos = pos.copy()
     this.rot = rot
     this.targetRot = rot.copy()
-
-    this.easing = 0.05
-    this.fill = fill
 
     this.fill = fill
     this.offsetFill = p.createVector(0, 0, 0)
@@ -52,12 +54,19 @@ export default class Entity {
       size,
       fill,
       targetFill,
+      speed,
       easing
     } = this
 
     // ease towards new pos
     const posDiff = p5.Vector.sub(targetPos, pos)
-    pos.add(posDiff.mult(easing))
+    posDiff.mult(easing)
+    const deltaPos = p.createVector(
+      p.min(posDiff.x, speed),
+      p.min(posDiff.y, speed),
+      p.min(posDiff.z, speed)
+    )
+    pos.add(deltaPos)
 
     // ease towards new rot
     const rotDiff = p5.Vector.sub(targetRot, rot)
@@ -86,10 +95,6 @@ export default class Entity {
     for (let i = 0; i < numWeights; i += 1) {
       weights[i] = this.getIdVal(Math.floor((i / numWeights) * 20), 4)
     }
-
-    // if (Math.random() > weights[0] * 0.1) {
-    //   return
-    // }
 
     // increment noise walker
     this.ambientDelta += weights[4]
@@ -137,7 +142,7 @@ export default class Entity {
 
     this.update()
 
-    const { p, pos, rot, size, fill } = this
+    const { p, pos, rot, size } = this
 
     p.push()
     p.strokeWeight(2)
@@ -148,6 +153,18 @@ export default class Entity {
     p.rotateZ(rot.z)
     p.box(size)
     p.pop()
+  }
+
+  getPos() {
+    return this.pos
+  }
+
+  setEasing(newEasing) {
+    this.easing = newEasing
+  }
+
+  setSpeed(newSpeed) {
+    this.speed = newSpeed
   }
 
   goTo(newPos) {
