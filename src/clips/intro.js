@@ -16,10 +16,10 @@ export default function sketch(p) {
     p.colorMode(p.HSB)
 
     // LAC = new LivingAudioChildren(p)
-    // journey = new Journey(p)
+    journey = new Journey(p)
     nature = new Nature(p, {})
 
-    subject = new Entity(p, { size: 64, pos: p.createVector(-400, -400, 400) })
+    subject = new Entity(p, { size: 64, ambientWeight: 1.5 })
   }
 
   // eslint-disable-next-line no-param-reassign
@@ -31,7 +31,7 @@ export default function sketch(p) {
   p.draw = () => {
     p.background(255)
     // LAC.render(250, -200, -200)
-    // journey.render(0, 0, -400, 0, 0, 0)
+    journey.render(0, 0, -400, 0, 0, 0)
     subject.render()
 
     if (p.millis() > 2000 && dist === 0) {
@@ -45,7 +45,7 @@ export default function sketch(p) {
     }
 
     if (p.millis() > 6000 && dist === 2) {
-      subject.translate(p.createVector(0, 0, -1700))
+      subject.translate(p.createVector(0, 0, -9700))
       dist += 1
     }
 

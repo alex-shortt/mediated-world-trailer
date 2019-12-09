@@ -5,12 +5,12 @@ import uuid from "uuid/v4"
 export default class Entity {
   constructor(p, props) {
     const {
-      size = 64,
+      size,
       pos = p.createVector(0, 0, 0),
       rot = p5.Vector.random3D().mult(Math.PI * 2),
       fill = p.color(Math.random() * 360, 100, 60),
       easing = 0.05,
-      speed = 10,
+      speed = 50,
       seed = uuid(),
       ambientWeight = 1
     } = props
@@ -28,19 +28,21 @@ export default class Entity {
     this.ambientWeight = ambientWeight
     this.ambientDelta = 0
 
-    this.size = size
+    this.size = size || 150 * idHash(this.id, 10)
     this.targetSize = size
 
     this.pos = pos
+    this.offsetPos = p.createVector(0, 0, 0)
     this.targetPos = pos.copy()
     this.rot = rot
+    this.offsetRot = p.createVector(0, 0, 0)
     this.targetRot = rot.copy()
 
     this.fill = fill
     this.offsetFill = p.createVector(0, 0, 0)
     this.targetFill = p.color(fill)
 
-    console.log(`Entity with id ${this.id} created`)
+    console.log(`Created entity with id ${this.id}`)
   }
 
   update() {
@@ -59,12 +61,11 @@ export default class Entity {
     } = this
 
     // ease towards new pos
-    const posDiff = p5.Vector.sub(targetPos, pos)
-    posDiff.mult(easing)
+    const posDiff = p5.Vector.sub(targetPos, pos).mult(easing)
     const deltaPos = p.createVector(
-      p.min(posDiff.x, speed),
-      p.min(posDiff.y, speed),
-      p.min(posDiff.z, speed)
+      posDiff.x < 0 ? p.max(posDiff.x, speed * -1) : p.min(posDiff.x, speed),
+      posDiff.y < 0 ? p.max(posDiff.y, speed * -1) : p.min(posDiff.y, speed),
+      posDiff.z < 0 ? p.max(posDiff.z, speed * -1) : p.min(posDiff.z, speed)
     )
     pos.add(deltaPos)
 
@@ -107,16 +108,16 @@ export default class Entity {
     this.setOffsetFill(hueShift, satShift, brightShift)
 
     // pos mod
-    const dx = this.weightedNoise(weights[5], 0.01, size * 0.0001)
-    const dy = this.weightedNoise(weights[6], 0.01, size * 0.0001)
-    const dz = this.weightedNoise(weights[7], 0.01, size * 0.0001)
+    const dx = this.weightedNoise(weights[5], 0.01, size * 0.001)
+    const dy = this.weightedNoise(weights[6], 0.01, size * 0.001)
+    const dz = this.weightedNoise(weights[7], 0.01, size * 0.001)
     // console.log("pos: ", dx, dy, dz)
     this.translate(p.createVector(dx, dy, dz))
 
     // rot mod
-    const rx = this.weightedNoise(weights[9], 0.001, size * 0.00001)
-    const ry = this.weightedNoise(weights[10], 0.001, size * 0.00001)
-    const rz = this.weightedNoise(weights[11], 0.001, size * 0.00001)
+    const rx = this.weightedNoise(weights[9], 0.001, size * 0.0007)
+    const ry = this.weightedNoise(weights[10], 0.001, size * 0.0007)
+    const rz = this.weightedNoise(weights[11], 0.001, size * 0.0007)
     // console.log("rot: ", rx, ry, rz)
     this.rotate(p.createVector(rx, ry, rz))
   }
@@ -135,15 +136,19 @@ export default class Entity {
 
     this.update()
 
-    const { p, pos, rot, size } = this
+    const { p, pos, rot, size, offsetRot, offsetPos } = this
 
     p.push()
     p.strokeWeight(2)
     p.fill(this.getFillWithOffset())
     p.translate(pos)
+    p.translate(offsetPos)
     p.rotateX(rot.x)
     p.rotateY(rot.y)
     p.rotateZ(rot.z)
+    p.rotateX(offsetRot.x)
+    p.rotateY(offsetRot.y)
+    p.rotateZ(offsetRot.z)
     p.box(size)
     p.pop()
   }
@@ -175,6 +180,16 @@ export default class Entity {
   setOffsetFill(dh, ds, db) {
     const { p } = this
     this.offsetFill = p.createVector(dh, ds, db)
+  }
+
+  setOffsetRot(offRot) {
+    const { p } = this
+    this.offsetRot = offRot
+  }
+
+  setOffsetPos(offPos) {
+    const { p } = this
+    this.offsetPos = offPos
   }
 
   getFillWithOffset() {
