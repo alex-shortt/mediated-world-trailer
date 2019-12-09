@@ -5,6 +5,8 @@ export default class Journey {
     this.boxSize = 26
     this.gHue = Math.random() * 360
     this.hueSpeed = 0.8
+
+    this.setup()
   }
 
   setup() {

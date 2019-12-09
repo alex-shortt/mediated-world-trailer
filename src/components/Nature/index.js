@@ -6,7 +6,7 @@ import Entity from "components/Entity"
 
 export default class Nature {
   constructor(p, props) {
-    const { seed = uuid(), chunkSize = 2000, renderDist = 2 } = props
+    const { seed = uuid(), chunkSize = 2000, renderDist = 3 } = props
 
     this.p = p
 
@@ -23,15 +23,15 @@ export default class Nature {
     console.log(`Generated Nature with id ${this.id}`)
   }
 
-  update(x, y, z) {
+  update(pos) {
     const { chunkSize, renderDist } = this
     for (let dx = -renderDist; dx <= renderDist; dx += 1) {
       for (let dy = -renderDist; dy <= renderDist; dy += 1) {
-        for (let dz = -renderDist * 2; dz <= renderDist * 2; dz += 1) {
+        for (let dz = -renderDist; dz <= renderDist; dz += 1) {
           this.spawnChunkIfNew(
-            x + dx * chunkSize,
-            y + dy * chunkSize,
-            z + dz * chunkSize
+            pos.x + dx * chunkSize,
+            pos.y + dy * chunkSize,
+            pos.z + dz * chunkSize
           )
         }
       }
@@ -56,14 +56,35 @@ export default class Nature {
     chunks.push(new Chunk(p, { pos: thisChunkPos, size: chunkSize }))
   }
 
-  render(x, y, z) {
-    this.update(x, y, z)
+  render(pos) {
+    this.update(pos)
 
     const { chunks } = this
 
     for (const chunk of chunks) {
       chunk.render()
     }
+  }
+
+  getChunk(pos) {
+    const { p, chunks, chunkSize } = this
+    const thisChunkX = Math.floor(pos.x / chunkSize)
+    const thisChunkY = Math.floor(pos.y / chunkSize)
+    const thisChunkZ = Math.floor(pos.z / chunkSize)
+
+    const thisChunkPos = p.createVector(thisChunkX, thisChunkY, thisChunkZ)
+
+    for (const chunk of chunks) {
+      if (chunk.getPos().dist(thisChunkPos) === 0) {
+        return chunk
+      }
+    }
+
+    return null
+  }
+
+  getChunks() {
+    return this.chunks
   }
 }
 
@@ -99,7 +120,7 @@ class Chunk {
       weights[i] = idHash(this.id, Math.floor((i / numWeights) * 20))
     }
 
-    const density = weights[0] * 0.0015
+    const density = weights[0] * 0.0007
     const numClusters = density * size
     for (let i = 0; i < numClusters; i += 1) {
       const cx = center.x + p.map(Math.random(), 0, 1, -size / 2, size / 2)
@@ -113,6 +134,7 @@ class Chunk {
         // individual entity
         this.entities.push(
           new Entity(p, {
+            size: idHash(this.id, 90) * 160,
             pos: p.createVector(cx, cy, cz)
           })
         )
@@ -134,6 +156,10 @@ class Chunk {
 
   getPos() {
     return this.pos
+  }
+
+  getClusters() {
+    return this.clusters
   }
 }
 
@@ -214,6 +240,10 @@ class Cluster {
       entity.setOffsetRot(p.createVector(rx, ry, rz))
       entity.render()
     }
+  }
+
+  getPos() {
+    return this.pos
   }
 }
 
