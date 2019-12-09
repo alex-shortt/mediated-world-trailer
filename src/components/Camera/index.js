@@ -29,9 +29,15 @@ export default class Camera {
     // ease towards new pos
     const posDiff = p5.Vector.sub(targetPos, pos).mult(easing)
     const deltaPos = p.createVector(
-      posDiff.x < 0 ? p.max(posDiff.x, speed * -1) : p.min(posDiff.x, speed),
-      posDiff.y < 0 ? p.max(posDiff.y, speed * -1) : p.min(posDiff.y, speed),
-      posDiff.z < 0 ? p.max(posDiff.z, speed * -1) : p.min(posDiff.z, speed)
+      posDiff.x < 0
+        ? Math.max(posDiff.x, speed * -1)
+        : Math.min(posDiff.x, speed),
+      posDiff.y < 0
+        ? Math.max(posDiff.y, speed * -1)
+        : Math.min(posDiff.y, speed),
+      posDiff.z < 0
+        ? Math.max(posDiff.z, speed * -1)
+        : Math.min(posDiff.z, speed)
     )
     pos.add(deltaPos)
 

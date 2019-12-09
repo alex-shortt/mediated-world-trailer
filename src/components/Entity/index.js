@@ -26,7 +26,6 @@ export default class Entity {
     this.easing = easing
 
     this.ambientWeight = ambientWeight
-    this.ambientDelta = 0
 
     this.size = size || 150 * idHash(this.id, 10)
     this.targetSize = size
@@ -63,9 +62,15 @@ export default class Entity {
     // ease towards new pos
     const posDiff = p5.Vector.sub(targetPos, pos).mult(easing)
     const deltaPos = p.createVector(
-      posDiff.x < 0 ? p.max(posDiff.x, speed * -1) : p.min(posDiff.x, speed),
-      posDiff.y < 0 ? p.max(posDiff.y, speed * -1) : p.min(posDiff.y, speed),
-      posDiff.z < 0 ? p.max(posDiff.z, speed * -1) : p.min(posDiff.z, speed)
+      posDiff.x < 0
+        ? Math.max(posDiff.x, speed * -1)
+        : Math.min(posDiff.x, speed),
+      posDiff.y < 0
+        ? Math.max(posDiff.y, speed * -1)
+        : Math.min(posDiff.y, speed),
+      posDiff.z < 0
+        ? Math.max(posDiff.z, speed * -1)
+        : Math.min(posDiff.z, speed)
     )
     pos.add(deltaPos)
 
@@ -97,35 +102,32 @@ export default class Entity {
       weights[i] = idHash(this.id, i)
     }
 
-    // increment noise walker
-    this.ambientDelta += weights[4]
-
     // color mod
-    const hueShift = this.weightedNoise(weights[1], 0.005, 40)
-    const satShift = this.weightedNoise(weights[2], 0.001, 10)
-    const brightShift = this.weightedNoise(weights[3], 0.001, 10)
+    const hueShift = this.weightedNoise(weights[1], 0.00001, 30)
+    const satShift = this.weightedNoise(weights[2], 0.0001, 10)
+    const brightShift = this.weightedNoise(weights[3], 0.0001, 10)
     // console.log("color: ", hueShift, satShift, brightShift)
     this.setOffsetFill(hueShift, satShift, brightShift)
 
     // pos mod
-    const dx = this.weightedNoise(weights[5], 0.01, size * 0.001)
-    const dy = this.weightedNoise(weights[6], 0.01, size * 0.001)
-    const dz = this.weightedNoise(weights[7], 0.01, size * 0.001)
+    const dx = this.weightedNoise(weights[5], 0.0002, size * 0.001)
+    const dy = this.weightedNoise(weights[6], 0.0002, size * 0.001)
+    const dz = this.weightedNoise(weights[7], 0.0002, size * 0.001)
     // console.log("pos: ", dx, dy, dz)
     this.translate(p.createVector(dx, dy, dz))
 
     // rot mod
-    const rx = this.weightedNoise(weights[9], 0.001, size * 0.0007)
-    const ry = this.weightedNoise(weights[10], 0.001, size * 0.0007)
-    const rz = this.weightedNoise(weights[11], 0.001, size * 0.0007)
+    const rx = this.weightedNoise(weights[9], 0.0002, 0.0007)
+    const ry = this.weightedNoise(weights[10], 0.0002, 0.0007)
+    const rz = this.weightedNoise(weights[11], 0.0002, 0.0007)
     // console.log("rot: ", rx, ry, rz)
     this.rotate(p.createVector(rx, ry, rz))
   }
 
   weightedNoise(weight, speed, amplitude) {
-    const { p, ambientDelta, ambientWeight } = this
+    const { p, ambientWeight } = this
     return (
-      (p.noise(weight, ambientDelta * speed) - 0.5) *
+      (p.noise(weight * 10, p.millis() * speed) - 0.5) *
       (weight * amplitude) *
       ambientWeight
     )

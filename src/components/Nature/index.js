@@ -6,7 +6,7 @@ import Entity from "components/Entity"
 
 export default class Nature {
   constructor(p, props) {
-    const { seed = uuid(), chunkSize = 2000, renderDist = 3 } = props
+    const { seed = uuid(), chunkSize = 1990, renderDist = 3 } = props
 
     this.p = p
 
@@ -19,6 +19,14 @@ export default class Nature {
     this.chunkSize = chunkSize
 
     this.renderDist = renderDist
+    this.maxDist = distSquaredCoords(
+      0,
+      0,
+      0,
+      renderDist,
+      renderDist,
+      renderDist
+    )
 
     console.log(`Generated Nature with id ${this.id}`)
   }
@@ -48,7 +56,7 @@ export default class Nature {
     const thisChunkPos = p.createVector(thisChunkX, thisChunkY, thisChunkZ)
 
     for (const chunk of chunks) {
-      if (chunk.getPos().dist(thisChunkPos) === 0) {
+      if (distSquared(chunk.getPos(), thisChunkPos) === 0) {
         return
       }
     }
@@ -59,11 +67,32 @@ export default class Nature {
   render(pos) {
     this.update(pos)
 
-    const { chunks } = this
+    const { p, chunks, chunkSize, maxDist } = this
 
+    const chunkX = Math.floor(pos.x / chunkSize)
+    const chunkY = Math.floor(pos.y / chunkSize)
+    const chunkZ = Math.floor(pos.z / chunkSize)
+    const chunkPos = p.createVector(chunkX, chunkY, chunkZ)
+
+    // 48ms
+    let count = 0
     for (const chunk of chunks) {
-      chunk.render()
+      if (
+        distSquaredCoords(
+          chunk.getPos().x,
+          chunk.getPos().y,
+          chunk.getPos().z,
+          chunkX,
+          chunkY,
+          chunkZ
+        ) < maxDist
+      ) {
+        count += 1
+        chunk.render()
+      }
     }
+
+    console.log(`Rendered chunks ${count}/${chunks.length}`)
   }
 
   getChunk(pos) {
@@ -75,7 +104,7 @@ export default class Nature {
     const thisChunkPos = p.createVector(thisChunkX, thisChunkY, thisChunkZ)
 
     for (const chunk of chunks) {
-      if (chunk.getPos().dist(thisChunkPos) === 0) {
+      if (distSquared(chunk.getPos(), thisChunkPos) === 0) {
         return chunk
       }
     }
@@ -102,6 +131,7 @@ class Chunk {
     this.pos = pos
     this.center = p5.Vector.mult(pos, size)
     this.size = size
+    this.maxDensity = 0.00151
 
     this.clusters = []
     this.entities = []
@@ -112,7 +142,7 @@ class Chunk {
   }
 
   setup() {
-    const { p, center, size } = this
+    const { p, maxDensity, center, size } = this
 
     const weights = []
     const numWeights = 16
@@ -120,21 +150,22 @@ class Chunk {
       weights[i] = idHash(this.id, Math.floor((i / numWeights) * 20))
     }
 
-    const density = weights[0] * 0.0007
-    const numClusters = density * size
+    const density = weights[0] * maxDensity
+    const numClusters = Math.floor(density * size)
+    console.log(numClusters)
     for (let i = 0; i < numClusters; i += 1) {
       const cx = center.x + p.map(Math.random(), 0, 1, -size / 2, size / 2)
       const cy = center.y + p.map(Math.random(), 0, 1, -size / 2, size / 2)
       const cz = center.z + p.map(Math.random(), 0, 1, -size / 2, size / 2)
 
-      if (Math.random() > weights[1]) {
+      if (Math.random() > weights[1] * 1.2) {
         // cluster
         this.clusters.push(new Cluster(p, { pos: p.createVector(cx, cy, cz) }))
       } else {
         // individual entity
         this.entities.push(
           new Entity(p, {
-            size: idHash(this.id, 90) * 160,
+            size: idHash(this.id, 90) * 150 + 35,
             pos: p.createVector(cx, cy, cz)
           })
         )
@@ -143,7 +174,14 @@ class Chunk {
   }
 
   render() {
-    const { entities, clusters } = this
+    const { p, id, center, size, entities, clusters } = this
+    //
+    // p.push()
+    // p.translate(center)
+    // p.strokeWeight(3)
+    // p.fill(idHash(id, 10) * 360, 100, 80, 30)
+    // p.box(size)
+    // p.pop()
 
     for (const entity of entities) {
       entity.render()
@@ -167,7 +205,7 @@ class Cluster {
   constructor(p, props) {
     const {
       pos,
-      numEntities = 10,
+      numEntities = 8,
       seed = uuid(),
       fill = p.color(Math.random() * 360, 100, 60)
     } = props
@@ -233,10 +271,12 @@ class Cluster {
   render() {
     const { p, id, entities } = this
     for (const entity of entities) {
-      const rx = p.sin(p.frameCount * 0.001 * idHash(id, 6)) * 5 * idHash(id, 2)
+      const rx =
+        Math.sin(p.millis() * 0.0001 * idHash(id, 6)) * 2.5 * idHash(id, 2)
       const ry =
-        p.sin(p.frameCount * 0.001 * idHash(id, 12)) * 5 * idHash(id, 1)
-      const rz = p.sin(p.frameCount * 0.001 * idHash(id, 4)) * 5 * idHash(id, 3)
+        Math.sin(p.millis() * 0.0001 * idHash(id, 12)) * 2.5 * idHash(id, 6)
+      const rz =
+        Math.sin(p.millis() * 0.0001 * idHash(id, 4)) * 2.5 * idHash(id, 9)
       entity.setOffsetRot(p.createVector(rx, ry, rz))
       entity.render()
     }
@@ -245,6 +285,20 @@ class Cluster {
   getPos() {
     return this.pos
   }
+}
+
+function distSquared(vec1, vec2) {
+  return Math.sqrt(
+    Math.pow(vec1.x - vec2.x, 2) +
+      Math.pow(vec1.y - vec2.y, 2) +
+      Math.pow(vec1.z - vec2.z, 2)
+  )
+}
+
+function distSquaredCoords(x1, y1, z1, x2, y2, z2) {
+  return Math.sqrt(
+    Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) + Math.pow(z1 - z2, 2)
+  )
 }
 
 function idHash(id, val) {

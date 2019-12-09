@@ -15,6 +15,7 @@ let journey
 let subject
 let nature
 let camera
+let fps
 
 const pickedClusters = []
 
@@ -26,6 +27,8 @@ export default function sketch(p) {
 
   // eslint-disable-next-line no-param-reassign
   p.setup = () => {
+    fps = p.frameRate()
+
     p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL)
     p.colorMode(p.HSB, 360, 100, 100, 255)
     music.play()
@@ -44,8 +47,10 @@ export default function sketch(p) {
     director.addDurationEvent(0, 18, (time, start, stop, duration) => {
       camera.setLookPos(subject.getPos())
       const completion = (time - start) / duration
-      const cx = subject.getPos().x + p.sin(completion * Math.PI) * 500
-      const cz = subject.getPos().z + p.cos(completion * Math.PI) * 500
+      const cx =
+        subject.getPos().x + p.sin((completion * Math.PI * 2) / 3) * 500
+      const cz =
+        subject.getPos().z + p.cos((completion * Math.PI * 2) / 3) * 500
       camera.setEasing(0.9)
       camera.setSpeed(1000)
       camera.setPos(p.createVector(cx, -40, cz))
@@ -148,9 +153,12 @@ export default function sketch(p) {
   p.draw = () => {
     p.background(255)
 
-    subject.render()
-    nature.render(camera.getPos())
-    camera.render()
-    director.render()
+    subject.render() // 0.2ms
+    nature.render(camera.getPos()) // 50 ms
+    camera.render() // 0.02ms
+    director.render() // 0.02ms
+
+    fps = p.frameRate()
+    console.log(`FPS: ${fps.toFixed(2)}`)
   }
 }
