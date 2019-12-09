@@ -7,7 +7,6 @@ import Entity from "components/Entity"
 export default class Nature {
   constructor(p, props) {
     const { seed = uuid(), chunkSize = 1990, renderDist = 3 } = props
-
     this.p = p
 
     this.id = hash
@@ -152,7 +151,6 @@ class Chunk {
 
     const density = weights[0] * maxDensity
     const numClusters = Math.floor(density * size)
-    console.log(numClusters)
     for (let i = 0; i < numClusters; i += 1) {
       const cx = center.x + p.map(Math.random(), 0, 1, -size / 2, size / 2)
       const cy = center.y + p.map(Math.random(), 0, 1, -size / 2, size / 2)
@@ -224,6 +222,12 @@ class Cluster {
     this.numEntities = numEntities * idHash(this.id, 10)
     this.entities = []
 
+    this.weights = []
+    const numWeights = 6
+    for (let i = 0; i < numWeights * 4; i += 1) {
+      this.weights[i] = idHash(this.id, i)
+    }
+
     this.setup()
   }
 
@@ -269,14 +273,16 @@ class Cluster {
   }
 
   render() {
-    const { p, id, entities } = this
+    const { p, id, entities, weights } = this
+
+    const w1 = weights[0]
+    const w2 = weights[1]
+    const w3 = weights[2]
+
     for (const entity of entities) {
-      const rx =
-        Math.sin(p.millis() * 0.0001 * idHash(id, 6)) * 2.5 * idHash(id, 2)
-      const ry =
-        Math.sin(p.millis() * 0.0001 * idHash(id, 12)) * 2.5 * idHash(id, 6)
-      const rz =
-        Math.sin(p.millis() * 0.0001 * idHash(id, 4)) * 2.5 * idHash(id, 9)
+      const rx = Math.sin(p.millis() * 0.0001 * w1) * 2.5 * w3
+      const ry = Math.sin(p.millis() * 0.0001 * w2) * 2.5 * w1
+      const rz = Math.sin(p.millis() * 0.0001 * w3) * 2.5 * w2
       entity.setOffsetRot(p.createVector(rx, ry, rz))
       entity.render()
     }

@@ -41,6 +41,12 @@ export default class Entity {
     this.offsetFill = p.createVector(0, 0, 0)
     this.targetFill = p.color(fill)
 
+    this.weights = []
+    const numWeights = 16
+    for (let i = 0; i < numWeights; i += 1) {
+      this.weights[i] = idHash(this.id, i)
+    }
+
     console.log(`Created entity with id ${this.id}`)
   }
 
@@ -94,13 +100,7 @@ export default class Entity {
   }
 
   ambientEffect() {
-    const { p, size } = this
-
-    const weights = []
-    const numWeights = 16
-    for (let i = 0; i < numWeights; i += 1) {
-      weights[i] = idHash(this.id, i)
-    }
+    const { p, size, weights } = this
 
     // color mod
     const hueShift = this.weightedNoise(weights[1], 0.00001, 30)
@@ -110,16 +110,16 @@ export default class Entity {
     this.setOffsetFill(hueShift, satShift, brightShift)
 
     // pos mod
-    const dx = this.weightedNoise(weights[5], 0.0002, size * 0.001)
-    const dy = this.weightedNoise(weights[6], 0.0002, size * 0.001)
-    const dz = this.weightedNoise(weights[7], 0.0002, size * 0.001)
+    const dx = this.weightedNoise(weights[5], 0.00017, size * 0.005)
+    const dy = this.weightedNoise(weights[6], 0.00017, size * 0.005)
+    const dz = this.weightedNoise(weights[7], 0.00017, size * 0.005)
     // console.log("pos: ", dx, dy, dz)
     this.translate(p.createVector(dx, dy, dz))
 
     // rot mod
-    const rx = this.weightedNoise(weights[9], 0.0002, 0.0007)
-    const ry = this.weightedNoise(weights[10], 0.0002, 0.0007)
-    const rz = this.weightedNoise(weights[11], 0.0002, 0.0007)
+    const rx = this.weightedNoise(weights[9], 0.002, 0.001)
+    const ry = this.weightedNoise(weights[10], 0.002, 0.001)
+    const rz = this.weightedNoise(weights[11], 0.002, 0.001)
     // console.log("rot: ", rx, ry, rz)
     this.rotate(p.createVector(rx, ry, rz))
   }

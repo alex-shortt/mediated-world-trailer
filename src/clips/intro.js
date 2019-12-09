@@ -79,7 +79,7 @@ export default function sketch(p) {
     })
 
     director.addTriggerEvent(18, (time, start) => {
-      camera.setSpeed(10)
+      camera.setSpeed(8)
       camera.setEasing(0.05)
 
       const clusterPos = pickedClusters[0].getPos()
@@ -91,9 +91,6 @@ export default function sketch(p) {
     })
 
     director.addTriggerEvent(22.3, (time, start) => {
-      camera.setSpeed(10)
-      camera.setEasing(0.05)
-
       const clusterPos = pickedClusters[1].getPos()
 
       camera.setPos(
@@ -103,9 +100,6 @@ export default function sketch(p) {
     })
 
     director.addTriggerEvent(26.9, (time, start) => {
-      camera.setSpeed(10)
-      camera.setEasing(0.05)
-
       const clusterPos = pickedClusters[2].getPos()
       camera.setPos(
         p.createVector(clusterPos.x, clusterPos.y, clusterPos.z + 500)
@@ -114,9 +108,6 @@ export default function sketch(p) {
     })
 
     director.addTriggerEvent(31.5, (time, start) => {
-      camera.setSpeed(10)
-      camera.setEasing(0.05)
-
       const clusterPos = pickedClusters[3].getPos()
       camera.setPos(
         p.createVector(clusterPos.x, clusterPos.y, clusterPos.z + 500)
@@ -124,12 +115,12 @@ export default function sketch(p) {
       camera.setLookPos(clusterPos)
     })
 
-    director.addTriggerEvent(35.9, () => {
+    director.addDurationEvent(35.9, 40.8, () => {
       camera.follow(subject)
     })
 
     director.addTriggerEvent(40.8, () => {
-      subject.setSpeed(50)
+      subject.setSpeed(30)
       subject.goTo(p.createVector(0, 0, -9000))
     })
 
