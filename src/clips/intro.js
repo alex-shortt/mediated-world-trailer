@@ -1,3 +1,5 @@
+import p5 from "p5"
+
 import LivingAudioChildren from "components/LivingAudioChildren"
 import Journey from "components/Journey"
 import Entity from "components/Entity"
@@ -27,17 +29,14 @@ export default function sketch(p) {
 
   // eslint-disable-next-line no-param-reassign
   p.setup = () => {
-    fps = p.frameRate()
-
     p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL)
     p.colorMode(p.HSB, 360, 100, 100, 255)
-    music.play()
-    console.warn(p.millis())
 
-    director = new Director(p, { offset: p.millis() })
+    LAC = new LivingAudioChildren(p, {})
     camera = new Camera(p, {})
     nature = new Nature(p, {})
-    subject = new Entity(p, { size: 64, ambientWeight: 1.2 })
+    subject = new Entity(p, { size: 64, ambientWeight: 1.3 })
+    director = new Director(p)
 
     director.addDurationEvent(0, 5, () => {
       p.background(255)
@@ -90,7 +89,7 @@ export default function sketch(p) {
       camera.setLookPos(clusterPos)
     })
 
-    director.addTriggerEvent(22.3, (time, start) => {
+    director.addTriggerEvent(22.7, (time, start) => {
       const clusterPos = pickedClusters[1].getPos()
 
       camera.setPos(
@@ -99,7 +98,7 @@ export default function sketch(p) {
       camera.setLookPos(clusterPos)
     })
 
-    director.addTriggerEvent(26.9, (time, start) => {
+    director.addTriggerEvent(27.2, (time, start) => {
       const clusterPos = pickedClusters[2].getPos()
       camera.setPos(
         p.createVector(clusterPos.x, clusterPos.y, clusterPos.z + 500)
@@ -115,18 +114,61 @@ export default function sketch(p) {
       camera.setLookPos(clusterPos)
     })
 
-    director.addDurationEvent(35.9, 40.8, () => {
+    director.addDurationEvent(36.4, 66, () => {
       camera.follow(subject)
     })
 
-    director.addTriggerEvent(40.8, () => {
+    director.addTriggerEvent(40.9, () => {
       subject.setSpeed(30)
       subject.goTo(p.createVector(0, 0, -9000))
+      subject.setAmbientWeight(1.85)
     })
 
-    director.addDurationEvent(40.8, 65, () => {
-      camera.follow(subject)
+    // fly up
+    director.addTriggerEvent(45.6, () => {
+      subject.goTo(p.createVector(0, -9000, -9000))
     })
+
+    // side view
+    director.addTriggerEvent(49.9, () => {
+      camera.setFollowPos(p.createVector(500, -90, -90))
+    })
+
+    // front view
+    director.addTriggerEvent(54.55, () => {
+      camera.setFollowPos(p.createVector(0, 0, -500))
+    })
+
+    // slow down
+    director.addTriggerEvent(59.3, () => {
+      const subPos = subject.getPos()
+      const stopPos = p5.Vector.add(subPos, p.createVector(0, -600, -600))
+      subject.goTo(stopPos)
+    })
+
+    // add lac
+    director.addTriggerEvent(62.4, () => {
+      const subPos = subject.getPos()
+      LAC.setPos(p.createVector(subPos.x, subPos.y - 300, subPos.z - 900))
+    })
+
+    director.addDurationEvent(62.4, 72, () => {
+      LAC.render()
+    })
+
+    // pan around
+    director.addDurationEvent(62.4, 68.6, (time, start, stop, duration) => {
+      camera.setSpeed(3000)
+      camera.setEasing(1)
+      const subPos = subject.getPos()
+      const completion = (time - start) / duration
+      const cx = Math.sin(completion * Math.PI) * 500
+      const cz = Math.cos(completion * Math.PI) * -500
+      camera.setPos(p.createVector(subPos.x + cx, subPos.y, subPos.z + cz))
+    })
+
+    director.setOffset()
+    music.play()
   }
 
   // eslint-disable-next-line no-param-reassign
@@ -136,8 +178,8 @@ export default function sketch(p) {
 
   // eslint-disable-next-line no-param-reassign
   p.mouseClicked = () => {
-    music.isPlaying() ? music.pause() : music.loop()
-    // console.log(director.getTime())
+    // music.isPlaying() ? music.pause() : music.loop()
+    console.log(director.getTime())
   }
 
   // eslint-disable-next-line no-param-reassign

@@ -1,9 +1,8 @@
 export default class Director {
   constructor(p, props) {
-    const { offset = 0 } = props
     this.p = p
     this.events = []
-    this.offset = offset
+    this.offset = p.millis()
   }
 
   addTriggerEvent(time, callback) {
@@ -25,6 +24,11 @@ export default class Director {
   getTime() {
     const { p, offset } = this
     return p.millis() - offset
+  }
+
+  setOffset() {
+    const { p } = this
+    this.offset = p.millis()
   }
 }
 

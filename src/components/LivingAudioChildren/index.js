@@ -2,25 +2,24 @@ import "p5/lib/addons/p5.sound"
 import p5 from "p5"
 
 export default class LivingAudioChildren {
-  constructor(p) {
+  constructor(p, props) {
+    const { pos } = props
+
     this.p = p
     this.numBoxes = 7
     this.zoom = 50
     this.boxesX = []
     this.rotBoost = 0
-    this.mic = new p5.AudioIn()
     this.amp = new p5.Amplitude(0.8)
     this.fft = new p5.FFT()
     this.spectrum = this.fft.analyze()
+    this.pos = pos
 
     this.setup()
   }
 
   setup() {
-    const { p, boxesX, zoom, numBoxes, fft, mic, amp } = this
-
-    mic.start()
-    fft.setInput(mic)
+    const { p, boxesX, zoom, numBoxes, amp } = this
 
     for (let x = 0; x < numBoxes; x += 1) {
       boxesX.push([])
@@ -36,14 +35,14 @@ export default class LivingAudioChildren {
     }
   }
 
-  render(x, y, z) {
-    const { p, boxesX, mic, fft } = this
+  render() {
+    const { p, boxesX, fft, pos, amp } = this
 
     p.push()
-    const level = mic.getLevel(0.3)
+    const level = amp.getLevel()
 
     this.rotBoost += level * level * 0.001
-    p.translate(x, y, z)
+    p.translate(pos)
     p.rotateY(p.frameCount * 0.004 + this.rotBoost)
     p.rotateX(p.frameCount * 0.002 + this.rotBoost)
     p.rotateZ(p.frameCount * 0.001 + this.rotBoost)
@@ -57,6 +56,10 @@ export default class LivingAudioChildren {
     }
     this.spectrum = fft.analyze()
     p.pop()
+  }
+
+  setPos(newPos) {
+    this.pos = newPos
   }
 }
 

@@ -10,16 +10,18 @@ export default class Camera {
     this.lookPos = p.createVector(0, 0, 100)
     this.upDir = p.createVector(0, 1, 0)
 
+    this.followPos = p.createVector(0, 0, 500)
+
     this.speed = 10
     this.easing = 0.05
   }
 
   follow(entity) {
-    const { p } = this
+    const { p, followPos } = this
     const pos = entity.getPos()
 
-    this.pos = p.createVector(pos.x, pos.y, pos.z + 500)
-    this.targetPos = p.createVector(pos.x, pos.y, pos.z + 500)
+    this.pos = p.createVector(pos.x, pos.y, pos.z).add(followPos)
+    this.targetPos = p.createVector(pos.x, pos.y, pos.z).add(followPos)
     this.lookPos = p.createVector(pos.x, pos.y, pos.z)
   }
 
@@ -72,6 +74,10 @@ export default class Camera {
 
   setEasing(newEasing) {
     this.easing = newEasing
+  }
+
+  setFollowPos(newFollowPos) {
+    this.followPos = newFollowPos
   }
 
   getPos() {

@@ -117,9 +117,9 @@ export default class Entity {
     this.translate(p.createVector(dx, dy, dz))
 
     // rot mod
-    const rx = this.weightedNoise(weights[9], 0.002, 0.001)
-    const ry = this.weightedNoise(weights[10], 0.002, 0.001)
-    const rz = this.weightedNoise(weights[11], 0.002, 0.001)
+    const rx = this.weightedNoise(weights[9], 0.0022, 0.03)
+    const ry = this.weightedNoise(weights[10], 0.0022, 0.03)
+    const rz = this.weightedNoise(weights[11], 0.0022, 0.03)
     // console.log("rot: ", rx, ry, rz)
     this.rotate(p.createVector(rx, ry, rz))
   }
@@ -200,6 +200,10 @@ export default class Entity {
     const sat = p.saturation(fill) + offsetFill.y
     const bright = p.brightness(fill) + offsetFill.z
     return p.color(hue, sat, bright)
+  }
+
+  setAmbientWeight(newAmbientWeight) {
+    this.ambientWeight = newAmbientWeight
   }
 }
 
