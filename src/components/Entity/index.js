@@ -205,6 +205,11 @@ export default class Entity {
   setAmbientWeight(newAmbientWeight) {
     this.ambientWeight = newAmbientWeight
   }
+
+  setHue(newHue) {
+    const { fill, p } = this
+    this.fill = p.color(newHue, p.saturation(fill), p.brightness(fill))
+  }
 }
 
 function idHash(id, val) {

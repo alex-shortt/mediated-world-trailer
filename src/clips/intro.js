@@ -1,7 +1,6 @@
 import p5 from "p5"
 
 import LivingAudioChildren from "components/LivingAudioChildren"
-import Journey from "components/Journey"
 import Entity from "components/Entity"
 import Nature from "components/Nature"
 import Camera from "components/Camera"
@@ -12,12 +11,13 @@ import "p5/lib/addons/p5.sound"
 
 let music
 let director
-let LAC
-let journey
 let subject
 let nature
+let LAC
 let camera
 let fps
+const followers = []
+let renderNature = true
 
 const pickedClusters = []
 
@@ -38,11 +38,12 @@ export default function sketch(p) {
     subject = new Entity(p, { size: 64, ambientWeight: 1.3 })
     director = new Director(p)
 
-    director.addDurationEvent(0, 5, () => {
-      p.background(255)
-      camera.follow(subject)
-    })
+    // fade in time
+    // director.addDurationEvent(0, 5, () => {
+    //   p.background(255)
+    // })
 
+    // pan around subject
     director.addDurationEvent(0, 18, (time, start, stop, duration) => {
       camera.setLookPos(subject.getPos())
       const completion = (time - start) / duration
@@ -55,6 +56,7 @@ export default function sketch(p) {
       camera.setPos(p.createVector(cx, -40, cz))
     })
 
+    // pick random clusters
     director.addTriggerEvent(10, () => {
       const chunks = nature.getChunks()
       const clusters = []
@@ -77,6 +79,7 @@ export default function sketch(p) {
       pickedClusters.push(clusters[clusterIndex])
     })
 
+    // cluster pan 1
     director.addTriggerEvent(18, (time, start) => {
       camera.setSpeed(8)
       camera.setEasing(0.05)
@@ -89,6 +92,7 @@ export default function sketch(p) {
       camera.setLookPos(clusterPos)
     })
 
+    // cluster pan 2
     director.addTriggerEvent(22.7, (time, start) => {
       const clusterPos = pickedClusters[1].getPos()
 
@@ -98,6 +102,7 @@ export default function sketch(p) {
       camera.setLookPos(clusterPos)
     })
 
+    // cluster pan 3
     director.addTriggerEvent(27.2, (time, start) => {
       const clusterPos = pickedClusters[2].getPos()
       camera.setPos(
@@ -106,6 +111,7 @@ export default function sketch(p) {
       camera.setLookPos(clusterPos)
     })
 
+    // cluster pan 4
     director.addTriggerEvent(31.5, (time, start) => {
       const clusterPos = pickedClusters[3].getPos()
       camera.setPos(
@@ -114,19 +120,21 @@ export default function sketch(p) {
       camera.setLookPos(clusterPos)
     })
 
-    director.addDurationEvent(36.4, 66, () => {
+    // back to subject
+    director.addDurationEvent(36.4, 62.9, () => {
       camera.follow(subject)
     })
 
+    // fly off!
     director.addTriggerEvent(40.9, () => {
       subject.setSpeed(30)
-      subject.goTo(p.createVector(0, 0, -9000))
+      subject.goTo(p.createVector(0, 0, -12000))
       subject.setAmbientWeight(1.85)
     })
 
     // fly up
     director.addTriggerEvent(45.6, () => {
-      subject.goTo(p.createVector(0, -9000, -9000))
+      subject.goTo(p.createVector(0, -12000, -12000))
     })
 
     // side view
@@ -146,18 +154,45 @@ export default function sketch(p) {
       subject.goTo(stopPos)
     })
 
-    // add lac
+    // add lac, add followers
     director.addTriggerEvent(62.4, () => {
       const subPos = subject.getPos()
-      LAC.setPos(p.createVector(subPos.x, subPos.y - 300, subPos.z - 900))
+      LAC.setPos(p.createVector(subPos.x, subPos.y, subPos.z - 1200))
+      const lacPos = LAC.getPos()
+      for (let i = 0; i < 13; i += 1) {
+        const radius = 500
+        const randCirc = Math.random()
+        const x = lacPos.x + Math.sin(randCirc * Math.PI * 2) * radius
+        const y = lacPos.y + Math.sin(Math.random() * Math.PI * 2) * radius
+        const z = lacPos.z + Math.cos(randCirc * Math.PI * 2) * radius
+        const followerPos = p.createVector(x, y, z)
+        const follower = new Entity(p, {
+          size: Math.random() * 50 + 20,
+          pos: followerPos,
+          ambientWeight: 0.7
+        })
+        followers.push(follower)
+      }
     })
 
-    director.addDurationEvent(62.4, 72, () => {
+    // render lac and followers for the rest of the video
+    director.addDurationEvent(65.9, 200, () => {
       LAC.render()
+      const hue = LAC.getHue()
+      // console.log(hue)
+      for (const follower of followers) {
+        follower.setHue(hue)
+        follower.render()
+      }
     })
 
-    // pan around
-    director.addDurationEvent(62.4, 68.6, (time, start, stop, duration) => {
+    // halfway through following pan
+    director.addTriggerEvent(65.9, () => {
+      LAC.setNumBoxes(11)
+    })
+
+    // pan around to look at lac
+    director.addDurationEvent(63.7, 77.61, (time, start, stop, duration) => {
       camera.setSpeed(3000)
       camera.setEasing(1)
       const subPos = subject.getPos()
@@ -165,6 +200,42 @@ export default function sketch(p) {
       const cx = Math.sin(completion * Math.PI) * 500
       const cz = Math.cos(completion * Math.PI) * -500
       camera.setPos(p.createVector(subPos.x + cx, subPos.y, subPos.z + cz))
+      nature.setRenderDistance((1 - completion) * 3)
+    })
+
+    // rotate around lac
+    director.addDurationEvent(77.61, 96, (time, start, stop, duration) => {
+      renderNature = false
+      camera.setSpeed(3000)
+      camera.setEasing(1)
+      const lacPos = LAC.getPos()
+      camera.setLookPos(lacPos)
+      const completion = (time - start) / duration
+      const cx = Math.sin(completion * Math.PI) * 1300
+      const cz = Math.cos(completion * Math.PI) * -1700
+      camera.setPos(p.createVector(lacPos.x + cx, lacPos.y, lacPos.z + cz))
+    })
+
+    // send subject to followers, pan away
+    director.addTriggerEvent(96, (time, start, stop, duration) => {
+      subject.setAmbientWeight(0.5)
+      subject.setSpeed(0.9)
+      subject.setEasing(0.1)
+      subject.translate(p.createVector(0, 0, -550))
+
+      const lacPos = LAC.getPos()
+      camera.setLookPos(lacPos)
+      const cx = lacPos.x + 1700
+      const cy = lacPos.y - 1000
+      const cz = lacPos.z + 0
+      camera.setSpeed(2)
+      camera.setEasing(0.1)
+      camera.setPos(p.createVector(cx, cy, cz))
+    })
+
+    // one with other beings, match hue
+    director.addDurationEvent(110, 220, () => {
+      subject.setHue(LAC.getHue())
     })
 
     director.setOffset()
@@ -187,11 +258,15 @@ export default function sketch(p) {
     p.background(255)
 
     subject.render() // 0.2ms
-    nature.render(camera.getPos()) // 50 ms
+
+    if (renderNature) {
+      nature.render(camera.getPos()) // 50 ms
+    }
+
     camera.render() // 0.02ms
     director.render() // 0.02ms
 
-    fps = p.frameRate()
-    console.log(`FPS: ${fps.toFixed(2)}`)
+    // fps = p.frameRate()
+    // console.log(`FPS: ${fps.toFixed(2)}`)
   }
 }

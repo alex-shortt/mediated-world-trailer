@@ -61,6 +61,25 @@ export default class LivingAudioChildren {
   setPos(newPos) {
     this.pos = newPos
   }
+
+  getPos() {
+    return this.pos
+  }
+
+  setNumBoxes(newNumBoxes) {
+    for (let x = 0; x < this.numBoxes; x += 1) {
+      for (let y = 0; y < this.numBoxes; y += 1) {
+        for (let z = 0; z < this.numBoxes; z += 1) {
+          this.boxesX[x][y][z].setNumBoxes(newNumBoxes)
+        }
+      }
+    }
+    this.numBoxes = newNumBoxes
+  }
+
+  getHue() {
+    return this.boxesX[0][0][0].getHue()
+  }
 }
 
 class Box {
@@ -138,5 +157,14 @@ class Box {
     // draw
     p.box(this.size * energy * 0.01)
     p.pop()
+  }
+
+  setNumBoxes(numBoxes) {
+    this.numBoxes = numBoxes
+  }
+
+  getHue() {
+    const { p } = this
+    return p.map(p.sin(p.frameCount * 0.005), -1, 1, 0, 360)
   }
 }

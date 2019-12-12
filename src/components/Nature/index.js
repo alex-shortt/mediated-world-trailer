@@ -32,6 +32,7 @@ export default class Nature {
 
   update(pos) {
     const { chunkSize, renderDist } = this
+
     for (let dx = -renderDist; dx <= renderDist; dx += 1) {
       for (let dy = -renderDist; dy <= renderDist; dy += 1) {
         for (let dz = -renderDist; dz <= renderDist; dz += 1) {
@@ -66,53 +67,40 @@ export default class Nature {
   render(pos) {
     this.update(pos)
 
-    const { p, chunks, chunkSize, maxDist } = this
+    const { chunks, chunkSize, maxDist } = this
 
     const chunkX = Math.floor(pos.x / chunkSize)
     const chunkY = Math.floor(pos.y / chunkSize)
     const chunkZ = Math.floor(pos.z / chunkSize)
-    const chunkPos = p.createVector(chunkX, chunkY, chunkZ)
 
-    // 48ms
     let count = 0
     for (const chunk of chunks) {
-      if (
-        distSquaredCoords(
-          chunk.getPos().x,
-          chunk.getPos().y,
-          chunk.getPos().z,
-          chunkX,
-          chunkY,
-          chunkZ
-        ) < maxDist
-      ) {
+      const chunkPos = chunk.getPos()
+      const distSq = distSquaredCoords(
+        chunkPos.x,
+        chunkPos.y,
+        chunkPos.z,
+        chunkX,
+        chunkY,
+        chunkZ
+      )
+
+      if (distSq < maxDist) {
         count += 1
         chunk.render()
       }
     }
 
-    console.log(`Rendered chunks ${count}/${chunks.length}`)
-  }
-
-  getChunk(pos) {
-    const { p, chunks, chunkSize } = this
-    const thisChunkX = Math.floor(pos.x / chunkSize)
-    const thisChunkY = Math.floor(pos.y / chunkSize)
-    const thisChunkZ = Math.floor(pos.z / chunkSize)
-
-    const thisChunkPos = p.createVector(thisChunkX, thisChunkY, thisChunkZ)
-
-    for (const chunk of chunks) {
-      if (distSquared(chunk.getPos(), thisChunkPos) === 0) {
-        return chunk
-      }
-    }
-
-    return null
+    // console.log(`Rendered chunks ${count}/${chunks.length}`)
   }
 
   getChunks() {
     return this.chunks
+  }
+
+  setRenderDistance(newDist) {
+    this.renderDist = newDist
+    this.maxDist = distSquaredCoords(0, 0, 0, newDist, newDist, newDist)
   }
 }
 
@@ -130,7 +118,7 @@ class Chunk {
     this.pos = pos
     this.center = p5.Vector.mult(pos, size)
     this.size = size
-    this.maxDensity = 0.00151
+    this.maxDensity = 0.00051
 
     this.clusters = []
     this.entities = []
@@ -149,7 +137,7 @@ class Chunk {
       weights[i] = idHash(this.id, Math.floor((i / numWeights) * 20))
     }
 
-    const density = weights[0] * maxDensity
+    const density = maxDensity
     const numClusters = Math.floor(density * size)
     for (let i = 0; i < numClusters; i += 1) {
       const cx = center.x + p.map(Math.random(), 0, 1, -size / 2, size / 2)
@@ -173,7 +161,7 @@ class Chunk {
 
   render() {
     const { p, id, center, size, entities, clusters } = this
-    //
+
     // p.push()
     // p.translate(center)
     // p.strokeWeight(3)
